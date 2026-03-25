@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cliqmark — We Don't Just Market, We Scale Brands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+<style>
+:root {
+  --purple: #a855f7;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --cyan: #06b6d4;
+  --bg: #06060f;
+  --bg2: #0c0c1a;
+  --card: rgba(255,255,255,.04);
+  --border: rgba(255,255,255,.09);
+  --text: #eeeeff;
+  --muted: rgba(220,220,255,.5);
+  --ff: 'Outfit', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html { overflow-x: hidden; }
+body { font-family: var(--ff); background: var(--bg); color: var(--text); overflow-x: hidden; cursor: none; }
+a { text-decoration: none; color: inherit; cursor: none; }
+button { cursor: none; font-family: var(--ff); }
+
+/* CURSOR */
+#dot { position:fixed; width:10px; height:10px; border-radius:50%; background:var(--purple); pointer-events:none; z-index:9999; translate:-50% -50%; mix-blend-mode:screen; transition:transform .2s, background .2s; }
+#ring { position:fixed; width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(168,85,247,.55); pointer-events:none; z-index:9998; translate:-50% -50%; transition:transform .3s; }
+body:has(a:hover) #dot, body:has(button:hover) #dot { transform:scale(2.6); background:var(--pink); }
+body:has(a:hover) #ring, body:has(button:hover) #ring { transform:scale(1.7); opacity:.45; }
+
+/* LOADER */
+#loader { position:fixed; inset:0; z-index:10000; background:var(--bg); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; }
+.ld-name { font-family:var(--ff); font-size:clamp(2.2rem,5vw,3.5rem); font-weight:900; letter-spacing:-0.04em; background:linear-gradient(135deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.ld-track { width:200px; height:2px; background:rgba(255,255,255,.08); border-radius:2px; overflow:hidden; }
+.ld-fill { height:100%; width:0; background:linear-gradient(90deg,var(--purple),var(--pink)); border-radius:2px; }
+.ld-pct { font-family:var(--mono); font-size:.7rem; color:var(--muted); letter-spacing:.1em; }
+
+/* NAV */
+nav { position:fixed; top:0; left:0; right:0; z-index:900; padding:22px 64px; display:flex; align-items:center; justify-content:space-between; transition:background .3s, backdrop-filter .3s, border-color .3s; }
+nav.stuck { background:rgba(6,6,15,.9); backdrop-filter:blur(22px); border-bottom:1px solid var(--border); }
+.logo { font-size:1.55rem; font-weight:900; letter-spacing:-0.04em; background:linear-gradient(135deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.nav-ul { display:flex; gap:38px; list-style:none; }
+.nav-ul a { font-size:.9rem; font-weight:500; color:var(--muted); transition:color .2s; position:relative; }
+.nav-ul a::after { content:''; position:absolute; bottom:-3px; left:0; width:0; height:1.5px; background:var(--purple); transition:width .3s; }
+.nav-ul a:hover { color:var(--text); }
+.nav-ul a:hover::after { width:100%; }
+.nav-cta { padding:11px 26px; background:linear-gradient(135deg,var(--purple),var(--pink)); border:none; border-radius:100px; font-size:.88rem; font-weight:700; color:#fff; transition:transform .2s, box-shadow .2s; }
+.nav-cta:hover { transform:scale(1.05); box-shadow:0 0 28px rgba(168,85,247,.45); }
+.burger { display:none; flex-direction:column; gap:5px; background:none; border:none; padding:4px; }
+.burger span { display:block; width:22px; height:2px; background:var(--text); border-radius:2px; transition:.3s; }
+
+/* MOBILE MENU */
+#mmenu { position:fixed; inset:0; z-index:890; background:rgba(6,6,15,.97); backdrop-filter:blur(24px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:40px; transform:translateX(100%); transition:transform .42s cubic-bezier(.77,0,.175,1); }
+#mmenu.open { transform:translateX(0); }
+#mmenu a { font-size:2.2rem; font-weight:900; letter-spacing:-0.03em; color:var(--text); transition:color .2s; }
+#mmenu a:hover { color:var(--purple); }
+
+/* HERO */
+#hero { position:relative; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:140px 64px 80px; overflow:hidden; text-align:center; }
+.hero-bg { position:absolute; inset:0; z-index:0; overflow:hidden; }
+.blob { position:absolute; border-radius:50%; filter:blur(90px); animation:drift 9s ease-in-out infinite; }
+.b1 { width:650px; height:650px; background:rgba(168,85,247,.22); top:-180px; left:-180px; animation-delay:0s; }
+.b2 { width:500px; height:500px; background:rgba(59,130,246,.18); bottom:-130px; right:-130px; animation-delay:-4s; }
+.b3 { width:320px; height:320px; background:rgba(236,72,153,.15); top:55%; left:55%; animation-delay:-7s; }
+@keyframes drift { 0%,100%{transform:translate(0,0)} 33%{transform:translate(40px,-30px)} 66%{transform:translate(-25px,40px)} }
+.grid-bg { position:absolute; inset:0; background-image:linear-gradient(rgba(168,85,247,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(168,85,247,.04) 1px,transparent 1px); background-size:72px 72px; }
+.vignette { position:absolute; inset:0; background:radial-gradient(ellipse at center,transparent 40%,var(--bg) 100%); }
+.hero-inner { position:relative; z-index:2; max-width:1000px; margin:0 auto; }
+
+.hero-badge { display:inline-flex; align-items:center; gap:10px; padding:9px 22px; background:rgba(168,85,247,.1); border:1px solid rgba(168,85,247,.28); border-radius:100px; font-family:var(--mono); font-size:.7rem; color:var(--purple); letter-spacing:.12em; text-transform:uppercase; margin-bottom:36px; }
+.badge-dot { width:7px; height:7px; border-radius:50%; background:var(--purple); animation:blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.25;transform:scale(.55)} }
+
+.hero-h1 { font-size:clamp(3.4rem,9vw,8.5rem); font-weight:900; letter-spacing:-0.045em; line-height:.93; margin-bottom:32px; }
+.ln-plain { display:block; color:var(--text); }
+.ln-grad { display:block; background:linear-gradient(135deg,var(--purple) 0%,var(--pink) 45%,var(--cyan) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-size:200%; animation:gshift 5s ease infinite; }
+@keyframes gshift { 0%,100%{background-position:0%} 50%{background-position:100%} }
+
+.hero-p { font-size:clamp(1rem,2.2vw,1.22rem); font-weight:400; line-height:1.72; color:var(--muted); max-width:560px; margin:0 auto 52px; }
+.hero-btns { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.btn-main { padding:17px 44px; background:linear-gradient(135deg,var(--purple),var(--pink)); border:none; border-radius:100px; font-size:1.05rem; font-weight:700; color:#fff; transition:transform .2s, box-shadow .2s; display:inline-block; }
+.btn-main:hover { transform:translateY(-4px); box-shadow:0 20px 55px rgba(168,85,247,.45); }
+.btn-ghost { padding:17px 44px; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:100px; font-size:1.05rem; font-weight:700; color:var(--text); transition:all .2s; display:inline-block; backdrop-filter:blur(12px); }
+.btn-ghost:hover { border-color:var(--purple); background:rgba(168,85,247,.1); transform:translateY(-4px); }
+
+.scroll-hint { position:absolute; bottom:36px; left:50%; translate:-50% 0; display:flex; flex-direction:column; align-items:center; gap:10px; font-family:var(--mono); font-size:.65rem; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; }
+.sb { width:1px; height:48px; background:linear-gradient(180deg,var(--purple),transparent); animation:sbA 2s ease-in-out infinite; }
+@keyframes sbA { 0%,100%{opacity:1;transform:scaleY(1)} 50%{opacity:.25;transform:scaleY(.35)} }
+
+/* TICKER */
+.ticker { overflow:hidden; padding:15px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); background:rgba(168,85,247,.03); }
+.ticker-inner { display:flex; width:max-content; animation:tick 24s linear infinite; }
+.ti { font-family:var(--mono); font-size:.78rem; color:var(--muted); letter-spacing:.07em; text-transform:uppercase; padding:0 44px; white-space:nowrap; display:flex; align-items:center; gap:14px; }
+.ti::after { content:'◆'; font-size:.5rem; color:var(--purple); }
+@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* SECTIONS */
+section { padding:120px 64px; position:relative; }
+.eyebrow { font-family:var(--mono); font-size:.7rem; font-weight:500; color:var(--purple); letter-spacing:.16em; text-transform:uppercase; display:block; margin-bottom:14px; }
+.s-h2 { font-size:clamp(2.4rem,5vw,4.2rem); font-weight:900; letter-spacing:-0.04em; line-height:.97; margin-bottom:22px; }
+.s-p { font-size:1.07rem; font-weight:400; color:var(--muted); line-height:1.76; max-width:500px; }
+
+/* ABOUT */
+#about { background:var(--bg2); }
+.about-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+.av-wrap { display:flex; flex-direction:column; gap:14px; }
+.big-card { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:40px; backdrop-filter:blur(18px); position:relative; overflow:hidden; }
+.big-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--purple),var(--pink),var(--cyan)); }
+.big-n { font-size:5.5rem; font-weight:900; letter-spacing:-0.05em; line-height:1; background:linear-gradient(135deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:5px; }
+.big-l { font-family:var(--mono); font-size:.7rem; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; }
+.mg { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.mc { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:22px 20px; backdrop-filter:blur(10px); }
+.mc-n { font-size:2.1rem; font-weight:900; letter-spacing:-0.04em; background:linear-gradient(135deg,var(--blue),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:5px; }
+.mc-l { font-size:.8rem; color:var(--muted); }
+.at p { font-size:1.05rem; color:var(--muted); line-height:1.8; }
+.at p+p { margin-top:18px; }
+.tags { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+.tag { padding:8px 18px; background:var(--card); border:1px solid var(--border); border-radius:100px; font-size:.82rem; font-weight:600; }
+
+/* SERVICES */
+#services { background:var(--bg); }
+.sh { text-align:center; margin-bottom:70px; }
+.sh .s-p { margin:0 auto; }
+.sg { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.sc { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:40px 36px; backdrop-filter:blur(18px); display:flex; flex-direction:column; gap:18px; position:relative; overflow:hidden; transition:transform .3s, box-shadow .3s, border-color .3s; }
+.sc::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(168,85,247,.13),transparent 60%); opacity:0; transition:opacity .3s; }
+.sc:hover::before { opacity:1; }
+.sc:hover { transform:translateY(-10px); box-shadow:0 32px 80px rgba(168,85,247,.16); border-color:rgba(168,85,247,.32); }
+.si { width:58px; height:58px; border-radius:18px; font-size:1.6rem; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(236,72,153,.18)); border:1px solid rgba(168,85,247,.22); }
+.sn { font-size:1.3rem; font-weight:800; letter-spacing:-0.03em; }
+.sd { font-size:.92rem; color:var(--muted); line-height:1.7; flex:1; }
+.sl { font-family:var(--mono); font-size:.72rem; color:var(--purple); letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:8px; margin-top:auto; transition:gap .2s; }
+.sc:hover .sl { gap:14px; }
+
+/* PORTFOLIO */
+#portfolio { background:var(--bg2); padding-bottom:80px; }
+.ph { display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:40px; }
+.drag-l { font-family:var(--mono); font-size:.72rem; color:var(--muted); letter-spacing:.07em; }
+.ps { overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; cursor:grab; }
+.ps:active { cursor:grabbing; }
+.ps::-webkit-scrollbar { display:none; }
+.pt { display:flex; gap:22px; padding:10px 64px 44px; width:max-content; }
+.pc { width:370px; flex-shrink:0; border-radius:24px; overflow:hidden; border:1px solid var(--border); background:var(--bg); transition:transform .3s, box-shadow .3s; }
+.pc:hover { transform:translateY(-10px); box-shadow:0 40px 80px rgba(0,0,0,.5); }
+.pt-thumb { height:240px; display:flex; align-items:center; justify-content:center; font-size:3.2rem; position:relative; overflow:hidden; }
+.pt-ov { position:absolute; inset:0; background:rgba(6,6,15,.76); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:.8rem; color:#fff; letter-spacing:.1em; opacity:0; transition:opacity .3s; }
+.pc:hover .pt-ov { opacity:1; }
+.pi { padding:24px 28px; }
+.pc-cat { font-family:var(--mono); font-size:.68rem; color:var(--purple); letter-spacing:.1em; text-transform:uppercase; margin-bottom:8px; }
+.pc-title { font-size:1.25rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:6px; }
+.pc-desc { font-size:.84rem; color:var(--muted); }
+
+/* WHY */
+#why { background:var(--bg); }
+.why-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+.stats-g { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:48px; }
+.stc { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:30px 26px; backdrop-filter:blur(18px); position:relative; overflow:hidden; transition:transform .3s, border-color .3s; }
+.stc::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--purple),var(--blue)); transform:scaleX(0); transform-origin:left; transition:transform .5s; }
+.stc:hover::after { transform:scaleX(1); }
+.stc:hover { transform:translateY(-5px); border-color:rgba(168,85,247,.22); }
+.sv { font-size:2.9rem; font-weight:900; letter-spacing:-0.05em; line-height:1; background:linear-gradient(135deg,var(--purple),var(--cyan)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:7px; }
+.sl2 { font-size:.88rem; color:var(--muted); }
+.usps { display:flex; flex-direction:column; gap:14px; margin-top:44px; }
+.usp { display:flex; gap:20px; align-items:flex-start; padding:26px 28px; background:var(--card); border:1px solid var(--border); border-radius:20px; backdrop-filter:blur(12px); transition:border-color .3s, transform .25s; }
+.usp:hover { border-color:rgba(168,85,247,.28); transform:translateX(6px); }
+.ui { width:46px; height:46px; min-width:46px; border-radius:14px; font-size:1.15rem; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,rgba(168,85,247,.2),rgba(59,130,246,.2)); border:1px solid rgba(168,85,247,.2); }
+.ut { font-size:1.05rem; font-weight:800; letter-spacing:-0.02em; margin-bottom:5px; }
+.ud { font-size:.88rem; color:var(--muted); line-height:1.65; }
+
+/* TESTIMONIALS */
+#testimonials { background:var(--bg2); overflow:hidden; }
+.th { text-align:center; margin-bottom:58px; }
+.th .s-p { margin:0 auto; }
+.tw { overflow:hidden; position:relative; }
+.tw::before, .tw::after { content:''; position:absolute; top:0; bottom:0; z-index:2; width:160px; pointer-events:none; }
+.tw::before { left:0; background:linear-gradient(90deg,var(--bg2),transparent); }
+.tw::after { right:0; background:linear-gradient(-90deg,var(--bg2),transparent); }
+.tt { display:flex; gap:20px; animation:scroll_t 30s linear infinite; width:max-content; }
+.tt:hover { animation-play-state:paused; }
+@keyframes scroll_t { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.tcard { width:360px; flex-shrink:0; background:var(--card); border:1px solid var(--border); border-radius:24px; padding:34px 30px; backdrop-filter:blur(18px); position:relative; }
+.tcard::after { content:'"'; position:absolute; top:10px; right:22px; font-size:6rem; font-weight:900; line-height:1; color:rgba(168,85,247,.1); }
+.ts { color:var(--pink); font-size:.9rem; letter-spacing:2px; margin-bottom:14px; }
+.tt2 { font-size:.92rem; color:var(--muted); line-height:1.75; margin-bottom:22px; }
+.ta { display:flex; align-items:center; gap:14px; }
+.tav { width:44px; height:44px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:900; color:#fff; }
+.tn { font-size:.97rem; font-weight:800; letter-spacing:-0.02em; }
+.tr { font-size:.76rem; color:var(--muted); margin-top:2px; }
+
+/* CTA */
+#cta-band { padding:130px 64px; text-align:center; position:relative; overflow:hidden; background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(236,72,153,.07)); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.cta-h { font-size:clamp(2.8rem,7vw,6rem); font-weight:900; letter-spacing:-0.05em; line-height:.95; margin-bottom:22px; }
+.cg { background:linear-gradient(135deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.cta-p { font-size:1.1rem; color:var(--muted); margin-bottom:46px; }
+
+/* CONTACT */
+#contact { background:var(--bg2); }
+.cg2 { display:grid; grid-template-columns:1fr 1.4fr; gap:80px; }
+.ci { display:flex; flex-direction:column; gap:26px; }
+.cd { display:flex; gap:16px; align-items:flex-start; }
+.cico { width:46px; height:46px; min-width:46px; border-radius:14px; font-size:1.1rem; display:flex; align-items:center; justify-content:center; background:var(--card); border:1px solid var(--border); }
+.cl { font-family:var(--mono); font-size:.67rem; color:var(--purple); letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+.cv { font-size:.97rem; font-weight:600; }
+.cf { display:flex; flex-direction:column; gap:16px; }
+.cr { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.cg3 { display:flex; flex-direction:column; gap:8px; }
+.cg3 label { font-family:var(--mono); font-size:.68rem; color:var(--muted); letter-spacing:.09em; text-transform:uppercase; }
+.cg3 input, .cg3 select, .cg3 textarea { background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:14px; padding:14px 18px; color:var(--text); font-family:var(--ff); font-size:.95rem; outline:none; transition:border-color .2s, box-shadow .2s; }
+.cg3 input::placeholder, .cg3 textarea::placeholder { color:rgba(220,220,255,.2); }
+.cg3 select option { background:var(--bg2); }
+.cg3 input:focus, .cg3 select:focus, .cg3 textarea:focus { border-color:var(--purple); box-shadow:0 0 0 3px rgba(168,85,247,.12); }
+.cg3 textarea { resize:vertical; min-height:120px; }
+.btn-send { align-self:flex-start; padding:16px 48px; background:linear-gradient(135deg,var(--purple),var(--pink)); border:none; border-radius:100px; font-size:1rem; font-weight:800; color:#fff; transition:transform .2s, box-shadow .2s; }
+.btn-send:hover { transform:translateY(-4px); box-shadow:0 20px 50px rgba(168,85,247,.42); }
+
+/* FOOTER */
+footer { padding:54px 64px; border-top:1px solid var(--border); background:var(--bg); }
+.fi { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:26px; }
+.fl { font-size:1.5rem; font-weight:900; letter-spacing:-0.04em; background:linear-gradient(135deg,var(--purple),var(--pink)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.ft { font-size:.8rem; color:var(--muted); margin-top:5px; }
+.flinks { display:flex; gap:28px; }
+.flinks a { font-size:.84rem; font-weight:500; color:var(--muted); transition:color .2s; }
+.flinks a:hover { color:var(--text); }
+.fc { font-family:var(--mono); font-size:.72rem; color:rgba(220,220,255,.2); }
+
+/* REVEAL */
+.rv { will-change:transform,opacity; }
+
+/* RESPONSIVE */
+@media(max-width:1080px) {
+  .sg { grid-template-columns:1fr 1fr; }
+  .about-grid, .why-grid, .cg2 { grid-template-columns:1fr; gap:48px; }
+}
+@media(max-width:768px) {
+  nav { padding:16px 24px; }
+  .nav-ul, .nav-cta { display:none; }
+  .burger { display:flex; }
+  section { padding:80px 24px; }
+  #hero { padding:110px 24px 70px; }
+  .sg { grid-template-columns:1fr; }
+  .stats-g { grid-template-columns:1fr 1fr; }
+  .cr { grid-template-columns:1fr; }
+  .fi { flex-direction:column; align-items:flex-start; gap:18px; }
+  .flinks { flex-wrap:wrap; gap:14px; }
+  .pt { padding:10px 24px 44px; }
+  #dot, #ring { display:none; }
+  body { cursor:auto; }
+  a, button { cursor:pointer; }
+}
+@media(max-width:480px) {
+  .hero-btns { flex-direction:column; align-items:center; }
+  .btn-main, .btn-ghost { width:100%; text-align:center; }
+  .mg { grid-template-columns:1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="dot"></div>
+<div id="ring"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-name">Cliqmark</div>
+  <div class="ld-track"><div class="ld-fill" id="ldFill"></div></div>
+  <div class="ld-pct" id="ldPct">0%</div>
+</div>
+
+<!-- MOBILE MENU -->
+<div id="mmenu">
+  <a href="#about" onclick="closeM()">About</a>
+  <a href="#services" onclick="closeM()">Services</a>
+  <a href="#portfolio" onclick="closeM()">Work</a>
+  <a href="#why" onclick="closeM()">Why Us</a>
+  <a href="#contact" onclick="closeM()">Contact</a>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">Cliqmark</a>
+  <ul class="nav-ul">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#portfolio">Work</a></li>
+    <li><a href="#why">Why Us</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Let's Talk</a>
+  <button class="burger" id="burger" onclick="toggleM()"><span></span><span></span><span></span></button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="grid-bg"></div>
+    <div class="vignette"></div>
+  </div>
+  <div class="hero-inner">
+    <div class="hero-badge"><div class="badge-dot"></div>Bangalore's #1 Digital Agency</div>
+    <h1 class="hero-h1">
+      <span class="ln-plain">We Don't Just</span>
+      <span class="ln-grad">Market — We Scale</span>
+      <span class="ln-plain">Brands.</span>
+    </h1>
+    <p class="hero-p">Performance-driven digital growth for ambitious brands. From clicks to conversions — we make every rupee deliver maximum return.</p>
+    <div class="hero-btns">
+      <a href="#contact" class="btn-main">Get Started →</a>
+      <a href="#portfolio" class="btn-ghost">View Our Work</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="sb"></div></div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ti">Website Design</span><span class="ti">E-commerce Dev</span><span class="ti">Google Ads</span><span class="ti">Meta Ads</span><span class="ti">SEO Services</span><span class="ti">Influencer Marketing</span><span class="ti">Shopify Stores</span><span class="ti">Performance Marketing</span><span class="ti">Brand Strategy</span>
+    <span class="ti">Website Design</span><span class="ti">E-commerce Dev</span><span class="ti">Google Ads</span><span class="ti">Meta Ads</span><span class="ti">SEO Services</span><span class="ti">Influencer Marketing</span><span class="ti">Shopify Stores</span><span class="ti">Performance Marketing</span><span class="ti">Brand Strategy</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="av-wrap">
+      <div class="big-card rv">
+        <div class="big-n">5+</div>
+        <div class="big-l">Years scaling Indian brands</div>
+      </div>
+      <div class="mg">
+        <div class="mc rv"><div class="mc-n" data-target="200">0</div><div class="mc-l">Clients Served</div></div>
+        <div class="mc rv"><div class="mc-n" data-target="98">0</div><div class="mc-l">% Retention Rate</div></div>
+        <div class="mc rv"><div class="mc-n" data-target="500">0</div><div class="mc-l">Campaigns Run</div></div>
+        <div class="mc rv"><div class="mc-n" data-target="12">0</div><div class="mc-l">Awards Won</div></div>
+      </div>
+    </div>
+    <div class="at">
+      <span class="eyebrow rv">// Who We Are</span>
+      <h2 class="s-h2 rv">Built Different.<br/>Results Obsessed.</h2>
+      <p class="rv">Cliqmark is Bangalore's most sought-after full-service digital agency. We combine data-driven strategy with bold creative execution to help brands dominate their market — online and offline.</p>
+      <p class="rv" style="margin-top:18px">From Indiranagar startups to pan-India enterprises, we've helped 200+ brands unlock exponential growth through performance marketing, stunning web experiences, and culturally-resonant influencer campaigns.</p>
+      <div class="tags rv">
+        <span class="tag">🏙️ Bangalore Based</span>
+        <span class="tag">📈 ROI Focused</span>
+        <span class="tag">⚡ Fast Delivery</span>
+        <span class="tag">🎯 Data Driven</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="sh">
+    <span class="eyebrow rv">// What We Do</span>
+    <h2 class="s-h2 rv">Our Services</h2>
+    <p class="s-p rv">Everything your brand needs to grow — under one roof. Pure in-house expertise, zero outsourcing.</p>
+  </div>
+  <div class="sg">
+    <div class="sc rv"><div class="si">🌐</div><div class="sn">Website Design &amp; Dev</div><div class="sd">Pixel-perfect, lightning-fast websites that convert visitors into customers. We build experiences that win awards and close deals.</div><div class="sl">Explore <span>→</span></div></div>
+    <div class="sc rv"><div class="si">🛒</div><div class="sn">E-commerce Development</div><div class="sd">Shopify-first storefronts built for scale. Custom themes, conversion optimisation, and seamless payment integrations for Indian markets.</div><div class="sl">Explore <span>→</span></div></div>
+    <div class="sc rv"><div class="si">📊</div><div class="sn">Google Ads</div><div class="sd">Search, Display, Shopping, YouTube — we manage every rupee of your Google budget for maximum ROAS you can actually brag about.</div><div class="sl">Explore <span>→</span></div></div>
+    <div class="sc rv"><div class="si">📱</div><div class="sn">Meta Ads</div><div class="sd">Facebook &amp; Instagram campaigns that stop the scroll and start conversations. Creative-first, data-backed strategies that actually sell.</div><div class="sl">Explore <span>→</span></div></div>
+    <div class="sc rv"><div class="si">🔍</div><div class="sn">SEO Services</div><div class="sd">Own page 1. Technical SEO, content strategy, and link building that puts you ahead of competition — and keeps you there for good.</div><div class="sl">Explore <span>→</span></div></div>
+    <div class="sc rv"><div class="si">✨</div><div class="sn">Influencer Marketing</div><div class="sd">Connect with India's most authentic creators. Nano to macro — we source, negotiate, and manage campaigns that drive real brand love.</div><div class="sl">Explore <span>→</span></div></div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="ph">
+    <div><span class="eyebrow rv">// Our Work</span><h2 class="s-h2 rv" style="margin-bottom:0">Selected Projects</h2></div>
+    <p class="drag-l rv">← Drag to explore →</p>
+  </div>
+  <div class="ps" id="portScroll">
+    <div class="pt">
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#1a0533,#3d1069)">🛍️<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">E-commerce / Shopify</div><div class="pc-title">Velora Fashion</div><div class="pc-desc">Custom Shopify store with 3× conversion rate improvement</div></div></div>
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#0b1a3d,#0d3b6e)">📈<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">Performance Marketing</div><div class="pc-title">FinTrust Capital</div><div class="pc-desc">Google Ads campaign delivering 8× ROAS in 60 days</div></div></div>
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#200b3d,#6b1a8a)">🌐<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">Web Design</div><div class="pc-title">Neocraft Studios</div><div class="pc-desc">Award-winning portfolio with cinematic scroll experience</div></div></div>
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#2a0a0a,#7a1a1a)">✨<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">Influencer Marketing</div><div class="pc-title">GlowUp Beauty</div><div class="pc-desc">200+ influencer campaign with 50M+ organic reach</div></div></div>
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#0a1a0a,#1a5c1a)">🔍<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">SEO</div><div class="pc-title">Organica Foods</div><div class="pc-desc">Ranked #1 for 40+ competitive keywords in 4 months</div></div></div>
+      <div class="pc"><div class="pt-thumb" style="background:linear-gradient(135deg,#1c1200,#5c4200)">📱<div class="pt-ov">View Project ↗</div></div><div class="pi"><div class="pc-cat">Meta Ads</div><div class="pc-title">UrbanNest Decor</div><div class="pc-desc">Instagram campaign — ₹2.1 CPL and 400% ROAS</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section id="why">
+  <div class="why-grid">
+    <div>
+      <span class="eyebrow rv">// Why Cliqmark</span>
+      <h2 class="s-h2 rv">We Deliver Results,<br/>Not Excuses.</h2>
+      <p class="s-p rv">Numbers don't lie. Our campaigns have generated ₹100Cr+ in attributed revenue for clients across India.</p>
+      <div class="stats-g">
+        <div class="stc rv"><div class="sv" data-target="200">0+</div><div class="sl2">Clients Served</div></div>
+        <div class="stc rv"><div class="sv">₹100Cr+</div><div class="sl2">Revenue Generated</div></div>
+        <div class="stc rv"><div class="sv" data-target="500">0+</div><div class="sl2">Campaigns Run</div></div>
+        <div class="stc rv"><div class="sv">8×</div><div class="sl2">Average ROAS</div></div>
+      </div>
+    </div>
+    <div>
+      <p class="s-p rv" style="margin-bottom:0">What makes working with us different?</p>
+      <div class="usps">
+        <div class="usp rv"><div class="ui">⚡</div><div><div class="ut">Speed That Shocks</div><div class="ud">Websites live in 10 days. Campaigns running in 48 hours. We move faster than your competition can react.</div></div></div>
+        <div class="usp rv"><div class="ui">🎯</div><div><div class="ut">ROI-Obsessed Strategy</div><div class="ud">Every decision is made with one question: does this make the client money? No vanity metrics. Real revenue.</div></div></div>
+        <div class="usp rv"><div class="ui">🧠</div><div><div class="ut">Creative Intelligence</div><div class="ud">Data tells us what works. Creativity makes it unforgettable. We blend both to build brands that resonate at scale.</div></div></div>
+        <div class="usp rv"><div class="ui">📍</div><div><div class="ut">Bangalore Rooted, India Ready</div><div class="ud">Deep understanding of Indian consumer behaviour and regional nuances that global agencies simply miss.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="th">
+    <span class="eyebrow rv">// Client Love</span>
+    <h2 class="s-h2 rv">What Our Clients Say</h2>
+    <p class="s-p rv">Real results. Real clients. Real talk.</p>
+  </div>
+  <div class="tw">
+    <div class="tt">
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">Cliqmark transformed our online presence. Our Shopify store went from ₹2L/month to ₹18L/month in just 90 days. Absolutely incredible team.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#a855f7,#ec4899)">P</div><div><div class="tn">Priya Mehta</div><div class="tr">Founder, Velora Fashion</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">Their Google Ads team is elite. We went from wasting 40% of budget to achieving 8× ROAS consistently. Cliqmark is the real deal.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)">R</div><div><div class="tn">Rahul Nair</div><div class="tr">CMO, FinTrust Capital</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">The website they designed got us two investor meetings we never would have landed otherwise. Stunning work. Worth every rupee.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">A</div><div><div class="tn">Ananya Krishnan</div><div class="tr">CEO, Neocraft Studios</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">50M organic impressions with creators who genuinely fit our brand. Instagram followers grew 10× in 3 months. Cliqmark delivered beyond expectations.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#ec4899,#a855f7)">S</div><div><div class="tn">Sneha Iyer</div><div class="tr">Founder, GlowUp Beauty</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">We rank #1 for our top 40 keywords and organic traffic is up 400%. The SEO team at Cliqmark are genuinely world-class.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#10b981,#3b82f6)">V</div><div><div class="tn">Vikram Sharma</div><div class="tr">MD, Organica Foods</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">₹2.1 CPL for a home decor brand sounds impossible — they made it happen. Customer acquisition cost dropped by 60% in two months.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#f97316,#ec4899)">K</div><div><div class="tn">Kavya Reddy</div><div class="tr">Founder, UrbanNest Decor</div></div></div></div>
+      <!-- duplicate for loop -->
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">Cliqmark transformed our online presence. Our Shopify store went from ₹2L/month to ₹18L/month in just 90 days. Absolutely incredible team.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#a855f7,#ec4899)">P</div><div><div class="tn">Priya Mehta</div><div class="tr">Founder, Velora Fashion</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">Their Google Ads team is elite. We went from wasting 40% of budget to achieving 8× ROAS consistently. Cliqmark is the real deal.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#3b82f6,#06b6d4)">R</div><div><div class="tn">Rahul Nair</div><div class="tr">CMO, FinTrust Capital</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">The website they designed got us two investor meetings we never would have landed otherwise. Stunning work. Worth every rupee.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">A</div><div><div class="tn">Ananya Krishnan</div><div class="tr">CEO, Neocraft Studios</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">50M organic impressions with creators who genuinely fit our brand. Instagram followers grew 10× in 3 months. Cliqmark delivered beyond expectations.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#ec4899,#a855f7)">S</div><div><div class="tn">Sneha Iyer</div><div class="tr">Founder, GlowUp Beauty</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">We rank #1 for our top 40 keywords and organic traffic is up 400%. The SEO team at Cliqmark are genuinely world-class.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#10b981,#3b82f6)">V</div><div><div class="tn">Vikram Sharma</div><div class="tr">MD, Organica Foods</div></div></div></div>
+      <div class="tcard"><div class="ts">★★★★★</div><div class="tt2">₹2.1 CPL for a home decor brand sounds impossible — they made it happen. Customer acquisition cost dropped by 60% in two months.</div><div class="ta"><div class="tav" style="background:linear-gradient(135deg,#f97316,#ec4899)">K</div><div><div class="tn">Kavya Reddy</div><div class="tr">Founder, UrbanNest Decor</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<section id="cta-band">
+  <div class="blob b1" style="position:absolute;opacity:.08"></div>
+  <div class="blob b2" style="position:absolute;opacity:.08"></div>
+  <div style="position:relative;z-index:2">
+    <span class="eyebrow rv" style="display:block;text-align:center">// Ready to Grow?</span>
+    <h2 class="cta-h rv">Let's Scale Your<br/><span class="cg">Brand Together.</span></h2>
+    <p class="cta-p rv">Join 200+ brands that chose Cliqmark to dominate their market.</p>
+    <div class="rv"><a href="#contact" class="btn-main" style="font-size:1.1rem;padding:18px 56px">Contact Us →</a></div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="cg2">
+    <div class="ci">
+      <div>
+        <span class="eyebrow rv">// Get In Touch</span>
+        <h2 class="s-h2 rv">Start Your<br/>Growth Story.</h2>
+        <p class="s-p rv">Drop us a message and we'll reply within 24 hours. No fluff, just results.</p>
+      </div>
+      <div class="cd rv"><div class="cico">📍</div><div><div class="cl">Location</div><div class="cv">Bangalore, Karnataka, India</div></div></div>
+      <div class="cd rv"><div class="cico">📧</div><div><div class="cl">Email</div><div class="cv">hello@cliqmark.in</div></div></div>
+      <div class="cd rv"><div class="cico">📞</div><div><div class="cl">Phone</div><div class="cv">+91 98765 43210</div></div></div>
+      <div class="cd rv"><div class="cico">🕐</div><div><div class="cl">Hours</div><div class="cv">Mon–Sat · 9AM–7PM IST</div></div></div>
+    </div>
+    <div class="rv">
+      <form class="cf" id="cform">
+        <div class="cr">
+          <div class="cg3"><label>Your Name</label><input type="text" placeholder="Rahul Sharma"/></div>
+          <div class="cg3"><label>Email Address</label><input type="email" placeholder="rahul@company.com"/></div>
+        </div>
+        <div class="cr">
+          <div class="cg3"><label>Phone</label><input type="tel" placeholder="+91 98765 43210"/></div>
+          <div class="cg3"><label>Service Needed</label>
+            <select>
+              <option value="">Select a service</option>
+              <option>Website Design &amp; Development</option>
+              <option>E-commerce / Shopify</option>
+              <option>Google Ads</option>
+              <option>Meta Ads</option>
+              <option>SEO Services</option>
+              <option>Influencer Marketing</option>
+              <option>Full-Service Package</option>
+            </select>
+          </div>
+        </div>
+        <div class="cg3"><label>Your Message</label><textarea placeholder="Tell us about your brand and goals..."></textarea></div>
+        <button type="submit" class="btn-send">Send Message →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fi">
+    <div><div class="fl">Cliqmark</div><div class="ft">Bangalore's #1 Digital Agency</div></div>
+    <div class="flinks">
+      <a href="#about">About</a><a href="#services">Services</a><a href="#portfolio">Work</a><a href="#why">Why Us</a><a href="#contact">Contact</a>
+    </div>
+    <div class="fc">© 2025 Cliqmark. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+/* CURSOR */
+const dot = document.getElementById('dot');
+const ring = document.getElementById('ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX; my=e.clientY;
+  dot.style.left=mx+'px'; dot.style.top=my+'px';
+});
+(function loop(){
+  rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(loop);
+})();
+
+/* LOADER — hero content always visible; loader fades out on top */
+const ldFill=document.getElementById('ldFill');
+const ldPct=document.getElementById('ldPct');
+const loader=document.getElementById('loader');
+let p=0;
+const lInt=setInterval(()=>{
+  p+=Math.random()*9+3;
+  if(p>=100){p=100;clearInterval(lInt);}
+  ldFill.style.width=p+'%';
+  ldPct.textContent=Math.round(p)+'%';
+  if(p>=100){
+    setTimeout(()=>{
+      loader.style.transition='opacity .5s ease';
+      loader.style.opacity='0';
+      setTimeout(()=>{loader.style.display='none'; runHeroAnim();},520);
+    },250);
+  }
+},65);
+
+/* HERO ANIMATION after loader */
+function runHeroAnim(){
+  gsap.from('.hero-badge',{y:30,opacity:0,duration:.7,ease:'power3.out'});
+  gsap.from('.ln-plain, .ln-grad',{y:60,opacity:0,duration:.9,stagger:.14,ease:'power3.out',delay:.1});
+  gsap.from('.hero-p',{y:30,opacity:0,duration:.7,ease:'power3.out',delay:.55});
+  gsap.from('.hero-btns',{y:24,opacity:0,duration:.7,ease:'power3.out',delay:.75});
+}
+
+/* NAV */
+const navEl=document.getElementById('nav');
+window.addEventListener('scroll',()=>navEl.classList.toggle('stuck',scrollY>50));
+
+/* MOBILE */
+const mm=document.getElementById('mmenu');
+function toggleM(){mm.classList.toggle('open');}
+function closeM(){mm.classList.remove('open');}
+
+/* GSAP ScrollTrigger */
+gsap.registerPlugin(ScrollTrigger,ScrollToPlugin);
+document.querySelectorAll('.rv').forEach(el=>{
+  gsap.fromTo(el,{opacity:0,y:34},{opacity:1,y:0,duration:.75,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 88%',toggleActions:'play none none none'}});
+});
+
+/* COUNTERS */
+function animN(el,target){
+  let v=0; const dur=1800,step=16,inc=target/(dur/step);
+  const t=setInterval(()=>{v+=inc;if(v>=target){v=target;clearInterval(t);}el.textContent=Math.round(v);},step);
+}
+document.querySelectorAll('[data-target]').forEach(el=>{
+  ScrollTrigger.create({trigger:el,start:'top 82%',once:true,onEnter:()=>animN(el,+el.dataset.target)});
+});
+
+/* SERVICE GLOW */
+document.querySelectorAll('.sc').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+    c.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+  });
+});
+
+/* PORTFOLIO DRAG */
+const ps=document.getElementById('portScroll');
+let dn=false,sx,sl;
+ps.addEventListener('mousedown',e=>{dn=true;sx=e.pageX-ps.offsetLeft;sl=ps.scrollLeft;});
+ps.addEventListener('mouseleave',()=>dn=false);
+ps.addEventListener('mouseup',()=>dn=false);
+ps.addEventListener('mousemove',e=>{if(!dn)return;e.preventDefault();ps.scrollLeft=sl-(e.pageX-ps.offsetLeft-sx)*1.6;});
+
+/* SMOOTH SCROLL */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();gsap.to(window,{scrollTo:{y:t,offsetY:78},duration:.9,ease:'power3.inOut'});}
+  });
+});
+
+/* FORM */
+document.getElementById('cform').addEventListener('submit',e=>{
+  e.preventDefault();
+  const b=e.target.querySelector('.btn-send');
+  b.textContent='✓ Message Sent!';
+  b.style.background='linear-gradient(135deg,#10b981,#06b6d4)';
+  setTimeout(()=>{b.textContent='Send Message →';b.style.background='';},4000);
+});
+</script>
+</body>
+</html>
